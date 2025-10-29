@@ -139,18 +139,6 @@ private:
         g_object_set(appsrc_, "caps", caps, "format", GST_FORMAT_TIME, "is-live", TRUE, NULL);
         gst_caps_unref(caps);
 
-        //   // Capsfilter to NV12
-        //   GstCaps* caps_nv12_nvmm = gst_caps_new_simple(
-        //       "video/x-raw(memory:NVMM)",
-        //       "format", G_TYPE_STRING, "NV12",
-        //       "width", G_TYPE_INT, width,
-        //       "height", G_TYPE_INT, height,
-        //       NULL
-        //   );
-
-        //   g_object_set(capsfilter, "caps", caps_nv12_nvmm, NULL);
-        //   gst_caps_unref(caps_nv12_nvmm);
-
         // nv video conversion on gpu memoty
         g_object_set(G_OBJECT(nvvconv_to_nvmm),
                      "gpu-id", 0,
@@ -193,13 +181,6 @@ private:
             perror("link err: ");
             return nullptr;
         }
-        /*
-        if (!gst_element_link(nvvconv_to_nvmm, capsfilter)) {
-            RCLCPP_FATAL(get_logger(), "Failed to link nvvconv_to_nvmm -> capsfilter");
-            perror("link err: ");
-            return nullptr;
-        }
-        */
 
         // Get sink pad from nvstreammux
         GstPad *sinkpad, *srcpad;
@@ -256,18 +237,6 @@ private:
                               this, NULL);
         }
 
-        //   GstPad* infer_src_pad = gst_element_get_static_pad(pgie_elt, "src");
-        //     gst_pad_add_probe(infer_src_pad, GST_PAD_PROBE_TYPE_BUFFER,
-        //         [](GstPad*, GstPadProbeInfo* info, gpointer) -> GstPadProbeReturn {
-        //             NvDsBatchMeta* batch_meta = gst_buffer_get_nvds_batch_meta(GST_PAD_PROBE_INFO_BUFFER(info));
-        //             if (!batch_meta) { printf("No batch meta\n"); return GST_PAD_PROBE_OK; }
-        //             for (NvDsMetaList* l_frame = batch_meta->frame_meta_list; l_frame; l_frame = l_frame->next) {
-        //                 NvDsFrameMeta* frame_meta = (NvDsFrameMeta*)l_frame->data;
-        //                 printf("Frame %d, num objects: %d\n", frame_meta->frame_num, frame_meta->num_obj_meta);
-        //             }
-        //             return GST_PAD_PROBE_OK;
-        //         }, nullptr, nullptr);
-
         gst_element_set_state(pipeline_, GST_STATE_PLAYING);
         RCLCPP_INFO(get_logger(), "Pipeline built successfully!");
         return pipeline_;
@@ -278,22 +247,15 @@ private:
 
         cv::Mat frame = convertToRGB8(msg, this->get_logger());
         
-        
-
-
         if (!has_set_up && !frame.empty())
         {
             RCLCPP_INFO(this->get_logger(), "Recieved first frame, generating pipeline with size: %dx%d", frame.cols, frame.rows);
-            //build_pipeline(frame.cols, frame.rows, std::string(msg->encoding).append("").c_str());
-            // If you want to make msg->encoding uppercase:
+
 
             build_pipeline(frame.cols, frame.rows);
             has_set_up = true;
         }
 
-        // RCLCPP_INFO(this->get_logger(), "rx img msg");
-
-        // cv::cvtColor(frame, frame, cv::COLOR_BGR2RGB);
         GstBuffer *buffer = gst_buffer_new_allocate(NULL, frame.total() * frame.elemSize(), NULL);
         GstMapInfo map;
 
@@ -330,17 +292,6 @@ private:
         {
             NvDsFrameMeta *frame_meta = (NvDsFrameMeta *)(l_frame->data);
 
-            // RCLCPP_INFO(node->get_logger(),
-            //"Frame %d: %d objects",
-            // frame_meta->frame_num,
-            // g_list_length(frame_meta->obj_meta_list));
-
-            // RCLCPP_INFO(node->get_logger(),
-            //"Frame %d: num_obj_meta=%d, obj_meta_list=%p",
-            // frame_meta->frame_num,
-            // frame_meta->num_obj_meta,
-            // frame_meta->obj_meta_list);
-
             const char *ids[] = {
                 "car",
                 "bicycle",
@@ -364,6 +315,8 @@ private:
                 ObjectHypothesisWithPose hyp;
                 hyp.hypothesis.class_id = ids[obj_meta->class_id];
                 hyp.hypothesis.score = obj_meta->confidence;
+
+                det.id = std::to_string(obj_meta->object_id);
 
                 det.results.push_back(hyp);
                 det_array.detections.push_back(det);

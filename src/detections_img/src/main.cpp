@@ -129,7 +129,7 @@ private:
             cv::rectangle(img, pt1, pt2, color, thickness_scalar);
 
             // Create label with ID
-            std::string label = b_id + " #" + std::to_string(unique_id);
+            std::string label = b_id + " #" + box.id;  // <-- CHANGED: Use the ID from the detection
 
             cv::putText(
                 img, label, cv::Point(pt1.x, pt1.y - 5), 
