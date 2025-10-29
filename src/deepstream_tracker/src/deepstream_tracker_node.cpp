@@ -317,6 +317,7 @@ private:
                 hyp.hypothesis.score = obj_meta->confidence;
 
                 det.id = std::to_string(obj_meta->object_id);
+                
 
                 det.results.push_back(hyp);
                 det_array.detections.push_back(det);
