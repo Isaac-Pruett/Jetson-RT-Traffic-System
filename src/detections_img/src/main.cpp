@@ -4,12 +4,17 @@
 #include "cv_bridge/cv_bridge.h"
 #include "opencv2/opencv.hpp"
 #include <map>
-#include <cmath>
+#include <vector>
+#include <deque>
 
 class DrawingNode : public rclcpp::Node {
 public:
-    DrawingNode() : Node("detections_img_node"), next_id_(0) {
+    DrawingNode() : Node("detections_img_node") {
         RCLCPP_INFO(this->get_logger(), "Drawing node has started up!");
+
+        // Declare parameter for trail length
+        this->declare_parameter<int>("trail_length", 30);  // number of points to keep
+        max_trail_length_ = this->get_parameter("trail_length").as_int();
 
         image_sub_ = this->create_subscription<sensor_msgs::msg::Image>(
             "/image_raw", 4,
@@ -28,11 +33,9 @@ private:
     cv_bridge::CvImagePtr latest_image_;
     vision_msgs::msg::Detection2DArray::SharedPtr latest_boxes_;
     
-    // Tracking variables
-    std::map<int, cv::Point2f> tracked_objects_;  // ID -> last center position
-    std::map<int, std::string> tracked_classes_;  // ID -> class name
-    int next_id_;
-    const float DISTANCE_THRESHOLD = 50.0f;  // pixels - adjust based on your needs
+    // Trail tracking: map from object ID to deque of center points
+    std::map<std::string, std::deque<cv::Point2f>> object_trails_;
+    int max_trail_length_;
 
     void image_callback(const sensor_msgs::msg::Image::SharedPtr msg) {
         try {
@@ -48,40 +51,6 @@ private:
         try_render();
     }
 
-    float distance(const cv::Point2f& p1, const cv::Point2f& p2) {
-        float dx = p1.x - p2.x;
-        float dy = p1.y - p2.y;
-        return std::sqrt(dx * dx + dy * dy);
-    }
-
-    int assign_id(const cv::Point2f& center, const std::string& class_id) {
-        // Try to find a matching tracked object
-        int best_id = -1;
-        float best_distance = DISTANCE_THRESHOLD;
-
-        for (const auto& [id, prev_center] : tracked_objects_) {
-            // Only match if same class
-            if (tracked_classes_[id] != class_id) continue;
-            
-            float dist = distance(center, prev_center);
-            if (dist < best_distance) {
-                best_distance = dist;
-                best_id = id;
-            }
-        }
-
-        if (best_id == -1) {
-            // New object - assign new ID
-            best_id = next_id_++;
-        }
-
-        // Update tracking info
-        tracked_objects_[best_id] = center;
-        tracked_classes_[best_id] = class_id;
-
-        return best_id;
-    }
-
     void try_render() {
         if (!latest_boxes_ || !latest_image_){
             return;
@@ -89,10 +58,53 @@ private:
 
         cv::Mat img = latest_image_->image.clone();
 
-        // Clear old tracking data and prepare for new frame
-        std::map<int, cv::Point2f> new_tracked_objects;
-        std::map<int, std::string> new_tracked_classes;
+        // Track which IDs are present in this frame
+        std::set<std::string> current_ids;
 
+        // First pass: update trails and collect current IDs
+        for (const auto &box : latest_boxes_->detections){
+            if (box.results.empty()) continue;
+            
+            const auto ctr = box.bbox.center.position;
+            cv::Point2f center(ctr.x, ctr.y);
+            std::string obj_id = box.id;
+            
+            current_ids.insert(obj_id);
+            
+            // Add center point to trail
+            auto& trail = object_trails_[obj_id];
+            trail.push_back(center);
+            
+            // Limit trail length
+            if (trail.size() > max_trail_length_) {
+                trail.pop_front();
+            }
+        }
+
+        // Remove trails for IDs that are no longer present
+        for (auto it = object_trails_.begin(); it != object_trails_.end(); ) {
+            if (current_ids.find(it->first) == current_ids.end()) {
+                it = object_trails_.erase(it);
+            } else {
+                ++it;
+            }
+        }
+
+        // Draw all trails first (so they appear behind bounding boxes)
+        for (const auto& [obj_id, trail] : object_trails_) {
+            if (trail.size() < 2) continue;
+            
+            // Draw trail as connected line segments
+            for (size_t i = 1; i < trail.size(); ++i) {
+                // Optional: fade older points by making them more transparent/thinner
+                float alpha = static_cast<float>(i) / trail.size();
+                int thickness = std::max(1, static_cast<int>(alpha * 3));
+                
+                cv::line(img, trail[i-1], trail[i], cv::Scalar(255, 255, 0), thickness);
+            }
+        }
+
+        // Second pass: draw bounding boxes and labels
         for (const auto &box : latest_boxes_->detections){
             const auto ctr = box.bbox.center.position;
             float w = box.bbox.size_x;
@@ -103,12 +115,6 @@ private:
             if (box.results.empty()) continue;
             
             auto b_id = box.results[0].hypothesis.class_id;
-            cv::Point2f center(ctr.x, ctr.y);
-
-            // Assign unique ID to this detection
-            int unique_id = assign_id(center, b_id);
-            new_tracked_objects[unique_id] = center;
-            new_tracked_classes[unique_id] = b_id;
 
             cv::Scalar color;
 
@@ -128,8 +134,8 @@ private:
 
             cv::rectangle(img, pt1, pt2, color, thickness_scalar);
 
-            // Create label with ID
-            std::string label = b_id + " #" + box.id;  // <-- CHANGED: Use the ID from the detection
+            // Create label with tracking ID
+            std::string label = b_id + " #" + box.id;
 
             cv::putText(
                 img, label, cv::Point(pt1.x, pt1.y - 5), 
@@ -141,10 +147,6 @@ private:
             
             cv::circle(img, cv::Point(ctr.x, ctr.y), 2 * thickness_scalar, cv::Scalar(255, 255, 255), -1);
         }
-
-        // Update tracked objects for next frame
-        tracked_objects_ = new_tracked_objects;
-        tracked_classes_ = new_tracked_classes;
 
         auto msg = cv_bridge::CvImage(
             latest_image_->header, sensor_msgs::image_encodings::BGR8, img
