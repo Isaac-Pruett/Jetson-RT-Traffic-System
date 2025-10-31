@@ -306,6 +306,21 @@ private:
             {
                 NvDsObjectMeta *obj_meta = (NvDsObjectMeta *)(l_obj->data);
 
+
+		// Onject ID Tracker Terminal Display
+		uint64_t track_id = obj_meta->object_id;
+		int class_id = obj_meta->class_id;
+		float conf = obj_meta->confidence;
+
+		// Check class_id < num of ids
+		std::string class_name = "unknown";
+		if (class_id >= 0 && class_id < (int)(sizeof(ids)/sizeof(ids[0]))) {
+			class_name = ids[class_id];
+		}
+		RCLCPP_INFO(node->get_logger(), "----Car ID#: %llu, Type: %s, Confidence Level: %.2f----", (unsigned long long)track_id, class_name.c_str(), conf);
+
+
+		// Fill 2d Detection
                 vision_msgs::msg::Detection2D det;
                 det.bbox.center.position.x = obj_meta->rect_params.left + obj_meta->rect_params.width / 2.0;
                 det.bbox.center.position.y = obj_meta->rect_params.top + obj_meta->rect_params.height / 2.0;
@@ -313,24 +328,25 @@ private:
                 det.bbox.size_y = obj_meta->rect_params.height;
 
                 ObjectHypothesisWithPose hyp;
-                hyp.hypothesis.class_id = ids[obj_meta->class_id];
-                hyp.hypothesis.score = obj_meta->confidence;
+                //hyp.hypothesis.class_id = ids[obj_meta->class_id];
+                hyp.hypothesis.class_id = class_name;
+		//hyp.hypothesis.score = obj_meta->confidence;
+		hyp.hypothesis.score = conf;
 
                 det.id = std::to_string(obj_meta->object_id);
                 
 
-                det.results.push_back(hyp);
-                det_array.detections.push_back(det);
+                //det.results.push_back(hyp);
+                //det_array.detections.push_back(det);
+                det.results.emplace_back(hyp);
+                det_array.detections.emplace_back(det);
 
-                // RCLCPP_INFO(node->get_logger(), hyp.hypothesis.class_id.c_str());
             }
 
-            if (frame_meta->num_obj_meta == 0)
-            {
-                RCLCPP_INFO(node->get_logger(), "No objects in this frame");
+            if (frame_meta->num_obj_meta == 0) {
+                RCLCPP_INFO(node->get_logger(), "No objects in this frame (obj_meta_list == null[tr)");
             }
 
-            // RCLCPP_INFO(node->get_logger(), "det arr size: %d", det_array.detections.size());
             
             node->pub_->publish(det_array);
             
