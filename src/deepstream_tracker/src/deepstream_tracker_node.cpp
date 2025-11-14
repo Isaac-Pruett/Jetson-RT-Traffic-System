@@ -306,6 +306,8 @@ private:
             {
                 NvDsObjectMeta *obj_meta = (NvDsObjectMeta *)(l_obj->data);
 
+		if (obj_meta->confidence < 0.6f)
+			continue; //skip object if confidence is too low
 
 		// Onject ID Tracker Terminal Display
 		uint64_t track_id = obj_meta->object_id;

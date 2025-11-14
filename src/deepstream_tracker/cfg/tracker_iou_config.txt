@@ -23,8 +23,8 @@
 #   ll-config-file: required for NvDCF, optional for KLT and IOU
 #
 [tracker]
-tracker-width=640
-tracker-height=384
+tracker-width=1280
+tracker-height=720
 gpu-id=0
 ll-lib-file=/opt/nvidia/deepstream/deepstream/lib/libnvds_nvmultiobjecttracker.so
 ll-config-file=config_tracker_NvDCF_perf.yml

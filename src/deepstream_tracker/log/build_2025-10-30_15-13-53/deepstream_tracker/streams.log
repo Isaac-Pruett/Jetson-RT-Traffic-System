@@ -1,0 +1,33 @@
+[0.017s] Invoking command in '/home/nvidia/Jetson-RT-Traffic-System/src/deepstream_tracker/build/deepstream_tracker': /usr/bin/cmake /home/nvidia/Jetson-RT-Traffic-System/src/deepstream_tracker -DAMENT_CMAKE_SYMLINK_INSTALL=1 -DCMAKE_INSTALL_PREFIX=/home/nvidia/Jetson-RT-Traffic-System/src/deepstream_tracker/install/deepstream_tracker
+[0.122s] -- The C compiler identification is GNU 11.4.0
+[0.235s] -- The CXX compiler identification is GNU 11.4.0
+[0.251s] -- Detecting C compiler ABI info
+[0.395s] -- Detecting C compiler ABI info - done
+[0.419s] -- Check for working C compiler: /usr/bin/cc - skipped
+[0.420s] -- Detecting C compile features
+[0.422s] -- Detecting C compile features - done
+[0.433s] -- Detecting CXX compiler ABI info
+[0.591s] -- Detecting CXX compiler ABI info - done
+[0.616s] -- Check for working CXX compiler: /usr/bin/c++ - skipped
+[0.617s] -- Detecting CXX compile features
+[0.619s] -- Detecting CXX compile features - done
+[0.645s] [31mCMake Error at CMakeLists.txt:5 (find_package):
+[0.645s]   By not providing "Findament_cmake.cmake" in CMAKE_MODULE_PATH this project
+[0.645s]   has asked CMake to find a package configuration file provided by
+[0.645s]   "ament_cmake", but CMake did not find one.
+[0.646s] 
+[0.646s]   Could not find a package configuration file provided by "ament_cmake" with
+[0.646s]   any of the following names:
+[0.646s] 
+[0.646s]     ament_cmakeConfig.cmake
+[0.646s]     ament_cmake-config.cmake
+[0.646s] 
+[0.646s]   Add the installation prefix of "ament_cmake" to CMAKE_PREFIX_PATH or set
+[0.647s]   "ament_cmake_DIR" to a directory containing one of the above files.  If
+[0.647s]   "ament_cmake" provides a separate development package or SDK, be sure it
+[0.647s]   has been installed.
+[0.647s] 
+[0.647s] -- Configuring incomplete, errors occurred!
+[0.647s] See also "/home/nvidia/Jetson-RT-Traffic-System/src/deepstream_tracker/build/deepstream_tracker/CMakeFiles/CMakeOutput.log".
+[0.647s] [0m
+[0.653s] Invoked command in '/home/nvidia/Jetson-RT-Traffic-System/src/deepstream_tracker/build/deepstream_tracker' returned '1': /usr/bin/cmake /home/nvidia/Jetson-RT-Traffic-System/src/deepstream_tracker -DAMENT_CMAKE_SYMLINK_INSTALL=1 -DCMAKE_INSTALL_PREFIX=/home/nvidia/Jetson-RT-Traffic-System/src/deepstream_tracker/install/deepstream_tracker

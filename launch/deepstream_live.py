@@ -37,9 +37,9 @@ def generate_launch_description():
             output='screen',
             parameters=[{
                 'video_filepath': LaunchConfiguration('video_path'),
-                'width': 960,
-                'height': 544,
-                'fps': 24  # 30 FPS is more realistic for HLS sources
+                'width': 1280,
+                'height': 720,
+                'fps': 16  # 30 FPS is more realistic for HLS sources
             }]
         ),
 
