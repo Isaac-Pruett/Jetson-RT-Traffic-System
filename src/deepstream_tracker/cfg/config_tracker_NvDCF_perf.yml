@@ -45,9 +45,9 @@ DataAssociator:
   minMatchingScore4VisualSimilarity: 0.7  # Min visual similarity score
 
   # [Association Metric: Weights]
-  matchingScoreWeight4VisualSimilarity: 0.6  # Weight for the visual similarity (in terms of correlation response ratio)
+  matchingScoreWeight4VisualSimilarity: 0.1  # Weight for the visual similarity (in terms of correlation response ratio)
   matchingScoreWeight4SizeSimilarity: 0.0    # Weight for the Size-similarity score
-  matchingScoreWeight4Iou: 0.4   # Weight for the IOU score
+  matchingScoreWeight4Iou: 0.9   # Weight for the IOU score
 
 StateEstimator:
   stateEstimatorType: 1  # the type of state estimator among { DUMMY=0, SIMPLE=1, REGULAR=2 }

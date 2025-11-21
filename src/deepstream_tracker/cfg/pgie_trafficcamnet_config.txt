@@ -82,3 +82,5 @@ output-tensor-meta=0
 pre-cluster-threshold=0.2
 topk=20
 nms-iou-threshold=0.5
+minBoxWidth=40
+minBoxheight=40
