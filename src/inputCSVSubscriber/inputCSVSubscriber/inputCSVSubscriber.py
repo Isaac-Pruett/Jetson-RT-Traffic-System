@@ -1,4 +1,5 @@
 import rclpy
+import csv
 from rclpy.node import Node
 from vision_msgs.msg import Detection2DArray
 from vision_msgs.msg import ObjectHypothesisWithPose
@@ -13,24 +14,46 @@ class ObjectSubscriber(Node):
 
         # Subscriber to /tracked_object_summary
         self.sub_ = self.create_subscription(Detection2DArray, '/tracked_object_summary', self.callback, 10)
-        
+        self.count = 0
+
+        # Open csv once and add the header
+        self.file = open("csv/base2.csv", "w", newline="")
+        self.write = csv.writer(self.file)
+        self.write.writerow(["Class ID", "ID", "Confidence LV", "x_initial", "y_initial", "x_final", "y_final"])
+    
     def callback(self, msg):
+        # Shut down the node once the first 100 moing objects are collected
+        if (self.count >= 100):
+            self.get_logger("100 objects detected! Shutting down...")
+            self.file.close()
+            rclpy.shutdown()
+            return 
+        
+        # Loop through the detected topic message and write them to the csv
         for detection in msg.detections:
             class_id = detection.results[0].hypothesis.class_id
             confidence = detection.results[0].hypothesis.score
             
-            # Grabbing coordinates from the published topic /tracked_object_summary
-            x_initial = detection.bbox.center.position.x
-            y_initial = detection.bbox.center.position.y
-    
-            x_final = detection.results[1].pose.pose.position.x
-            y_final = detection.results[1].pose.pose.position.y
+            # Grabbing coordinates from the published topic /tracked_object_summary 
+            x_initial = detection.results[0].pose.pose.position.x
+            y_initial = detection.results[0].pose.pose.position.y
 
+            x_final = detection.bbox.center.position.x
+            y_final = detection.bbox.center.position.y
             object_id = detection.id 
-
+        
+            # Only write the objects with confidence level greater than 50%
             if confidence >= 0.5:
-                self.get_logger().info(f"Detected {class_id} ID#{object_id} at initial: ({x_initial:.1f}, {y_initial:.1f}) | final ({x_final}, {y_final})")
-
+                self.count+= 1
+                self.get_logger().info(f"Current count: {self.count}")
+                self.get_logger().info(f"Detected {class_id} ID#{object_id} at initial: ({x_initial:.1f}, {y_initial:.1f}) | final ({x_final:.1f}, {y_final:.1f})\n")
+                self.write.writerow([class_id, object_id, confidence, int(x_initial), int(y_initial), int(x_final), int(y_final)])
+                # Get the first 100 objects as reference
+                if (self.count >= 100):
+                    self.get_logger().info("100 moving objects detected!")
+                    self.file.close()
+                    rclpy.shutdown()
+                    return
 def main():
     rclpy.init()
     node = ObjectSubscriber()
