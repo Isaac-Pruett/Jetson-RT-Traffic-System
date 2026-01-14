@@ -1,109 +1,101 @@
-import rclpy
-from rclpy.node import Node
+#!/usr/bin/env python3
 
-import numpy as np
+import rclcpp
+from rclcpp.node import Node
 import pandas as pd
 from sklearn.cluster import KMeans
-
-from vision_msgs.msg import Detection2DArray
-from std_msgs.msg import Float32MultiArray
 import os
 
-class KMeansClusterNode(Node):
+class KMeansClusteringNode(Node):
     def __init__(self):
-        super().__init__('kmeans_cluster_node')
-
-        # ---- PARAMETERS ----
-        self.declare_parameter('input_csv', 'training_data.csv')
-        self.declare_parameter('output_csv', 'clustered_output.csv')
-        self.declare_parameter('num_clusters', 2)
-        self.declare_parameter('topic_name', '/new_positions')
-
-        input_csv = self.get_parameter('input_csv').value
-        self.output_csv = self.get_parameter('output_csv').value
-        num_clusters = self.get_parameter('num_clusters').value
-        topic_name = self.get_parameter('topic_name').value
-
-        # ---- LOAD TRAINING DATA ----
-        self.get_logger().info(f'Loading training data from {input_csv}')
-        df = pd.read_csv(input_csv)
-
-        self.features = df[['x_initial', 'y_initial', 'x_final', 'y_final']].values
-
-        # ---- TRAIN KMEANS ----
-        # Initialize the KMeans model
-        self.kmeans = KMeans(
-            n_clusters=num_clusters,
-            random_state=42,
-            n_init=10
-        )
-
-        # Expect a 2D array
-        self.kmeans.fit(self.features) # finds the cluster centers that minimizes the sum of distances between data points and their assigned cluster centers
-
-        self.get_logger().info('KMeans model trained')
-
-        # ---- PREP OUTPUT CSV ----
-        if not os.path.exists(self.output_csv):
-            out_df = pd.DataFrame(
-                columns=[
-                    'x_initial',
-                    'y_initial',
-                    'x_final',
-                    'y_final',
-                    'cluster_id'
-                ]
-            )
-            out_df.to_csv(self.output_csv, index=False)
-
-        # ---- ROS SUBSCRIBER ----
-        self.subscription = self.create_subscription(
-            Float32MultiArray,
-            topic_name,
-            self.callback,
-            10
-        )
-
-        self.get_logger().info(f'Subscribed to {topic_name}')
-
-    def callback(self, msg: Float32MultiArray):
-        if len(msg.data) != 4:
-            self.get_logger().warn('Expected 4 values: x_i, y_i, x_f, y_f')
-            return
-
-        point = np.array(msg.data).reshape(1, -1)
-
-        # ---- PREDICT CLUSTER ----
-        cluster_id = int(self.kmeans.predict(point)[0])
-
-        self.get_logger().info(
-            f'Point {msg.data} assigned to cluster {cluster_id}'
-        )
-
-        # ---- SAVE TO CSV ----
-        new_row = pd.DataFrame([{
-            'x_initial': msg.data[0],
-            'y_initial': msg.data[1],
-            'x_final': msg.data[2],
-            'y_final': msg.data[3],
-            'cluster_id': cluster_id
-        }])
-
-        new_row.to_csv(
-            self.output_csv,
-            mode='a',
-            header=False,
-            index=False
-        )
-
+        super().__init__('kmeans_clustering_node')
+        
+        # Declare parameters
+        self.declare_parameter('input_csv', 'base.csv')
+        self.declare_parameter('output_csv', 'base_clustered.csv')
+        self.declare_parameter('n_clusters', 5)
+        self.declare_parameter('random_state', 42)
+        
+        # Get parameters
+        self.input_csv = self.get_parameter('input_csv').get_parameter_value().string_value
+        self.output_csv = self.get_parameter('output_csv').get_parameter_value().string_value
+        self.n_clusters = self.get_parameter('n_clusters').get_parameter_value().integer_value
+        self.random_state = self.get_parameter('random_state').get_parameter_value().integer_value
+        
+        self.get_logger().info(f'KMeans Clustering Node started')
+        self.get_logger().info(f'Input CSV: {self.input_csv}')
+        self.get_logger().info(f'Output CSV: {self.output_csv}')
+        self.get_logger().info(f'Number of clusters: {self.n_clusters}')
+        
+        # Run clustering
+        self.run_clustering()
+        
+    def run_clustering(self):
+        try:
+            # Check if input file exists
+            if not os.path.exists(self.input_csv):
+                self.get_logger().error(f'Input file not found: {self.input_csv}')
+                return
+            
+            # Read the CSV file
+            self.get_logger().info(f'Reading CSV file: {self.input_csv}')
+            df = pd.read_csv(self.input_csv)
+            
+            # Validate required columns
+            required_columns = ['ID', 'initial x', 'initial y', 'final x', 'final y']
+            missing_columns = [col for col in required_columns if col not in df.columns]
+            
+            if missing_columns:
+                self.get_logger().error(f'Missing required columns: {missing_columns}')
+                self.get_logger().error(f'Available columns: {list(df.columns)}')
+                return
+            
+            self.get_logger().info(f'Loaded {len(df)} rows from CSV')
+            
+            # Prepare features for clustering (initial x, initial y, final x, final y)
+            features = df[['initial x', 'initial y', 'final x', 'final y']].values
+            
+            self.get_logger().info(f'Running KMeans clustering with k={self.n_clusters}')
+            
+            # Perform KMeans clustering
+            kmeans = KMeans(n_clusters=self.n_clusters, random_state=self.random_state)
+            cluster_labels = kmeans.fit_predict(features)
+            
+            # Add cluster assignments to dataframe
+            df['cluster'] = cluster_labels
+            
+            # Save to output CSV
+            df.to_csv(self.output_csv, index=False)
+            
+            self.get_logger().info(f'Clustering complete! Output saved to: {self.output_csv}')
+            self.get_logger().info(f'Cluster distribution:')
+            
+            # Print cluster distribution
+            for i in range(self.n_clusters):
+                count = (cluster_labels == i).sum()
+                self.get_logger().info(f'  Cluster {i}: {count} objects')
+            
+            # Print cluster centers
+            self.get_logger().info(f'Cluster centers (initial_x, initial_y, final_x, final_y):')
+            for i, center in enumerate(kmeans.cluster_centers_):
+                self.get_logger().info(f'  Cluster {i}: [{center[0]:.2f}, {center[1]:.2f}, {center[2]:.2f}, {center[3]:.2f}]')
+                
+        except Exception as e:
+            self.get_logger().error(f'Error during clustering: {str(e)}')
+            import traceback
+            self.get_logger().error(traceback.format_exc())
 
 def main(args=None):
-    rclpy.init(args=args)
-    node = KMeansClusterNode()
-    rclpy.spin(node)
+    rclcpp.init(args=args)
+    
+    node = KMeansClusteringNode()
+    
+    # Since this is a one-time processing node, we can just let it complete
+    # and then shutdown
+    node.get_logger().info('Clustering task completed. Shutting down node.')
+    
     node.destroy_node()
-    rclpy.shutdown()
-
+    rclcpp.shutdown()
 
 if __name__ == '__main__':
     main()
