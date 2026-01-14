@@ -148,6 +148,17 @@ private:
             cv::circle(img, cv::Point(ctr.x, ctr.y), 2 * thickness_scalar, cv::Scalar(255, 255, 255), -1);
         }
 
+        // Draw coordinate reference markers
+        // Marker at (0, 0) - Red with white border
+        cv::rectangle(img, cv::Point(0, 0), cv::Point(5, 5), cv::Scalar(255, 255, 255), -1);  // White border
+        cv::rectangle(img, cv::Point(1, 1), cv::Point(4, 4), cv::Scalar(0, 0, 255), -1);      // Red center
+        cv::putText(img, "(0,0)", cv::Point(8, 12), cv::FONT_HERSHEY_SIMPLEX, 0.4, cv::Scalar(255, 255, 255), 1);
+        
+        // Marker at (100, 200) - Green with white border
+        cv::rectangle(img, cv::Point(98, 198), cv::Point(103, 203), cv::Scalar(255, 255, 255), -1);  // White border
+        cv::rectangle(img, cv::Point(99, 199), cv::Point(102, 202), cv::Scalar(0, 255, 0), -1);      // Green center
+        cv::putText(img, "(100,200)", cv::Point(106, 202), cv::FONT_HERSHEY_SIMPLEX, 0.4, cv::Scalar(255, 255, 255), 1);
+
         auto msg = cv_bridge::CvImage(
             latest_image_->header, sensor_msgs::image_encodings::BGR8, img
         ).toImageMsg();
