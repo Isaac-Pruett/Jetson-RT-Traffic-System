@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 from sklearn.cluster import KMeans
 
+from vision_msgs.msg import Detection2DArray
 from std_msgs.msg import Float32MultiArray
 import os
 
@@ -15,7 +16,7 @@ class KMeansClusterNode(Node):
         # ---- PARAMETERS ----
         self.declare_parameter('input_csv', 'training_data.csv')
         self.declare_parameter('output_csv', 'clustered_output.csv')
-        self.declare_parameter('num_clusters', 3)
+        self.declare_parameter('num_clusters', 2)
         self.declare_parameter('topic_name', '/new_positions')
 
         input_csv = self.get_parameter('input_csv').value
@@ -30,12 +31,15 @@ class KMeansClusterNode(Node):
         self.features = df[['x_initial', 'y_initial', 'x_final', 'y_final']].values
 
         # ---- TRAIN KMEANS ----
+        # Initialize the KMeans model
         self.kmeans = KMeans(
             n_clusters=num_clusters,
             random_state=42,
             n_init=10
         )
-        self.kmeans.fit(self.features)
+
+        # Expect a 2D array
+        self.kmeans.fit(self.features) # finds the cluster centers that minimizes the sum of distances between data points and their assigned cluster centers
 
         self.get_logger().info('KMeans model trained')
 

@@ -1,6 +1,6 @@
 from setuptools import find_packages, setup
 
-package_name = 'cluster_algorithm'
+package_name = 'inputCSVSubscriber'
 
 setup(
     name=package_name,
@@ -24,7 +24,8 @@ setup(
     },
     entry_points={
         'console_scripts': [
-            'cluster_algorithm = cluster_algorithm.cluster_algorithm:main',
+            'inputCSVSubscriber = inputCSVSubscriber.inputCSVSubscriber:main',
+
         ],
     },
 )

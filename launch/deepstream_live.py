@@ -8,7 +8,7 @@ def generate_launch_description():
 
     # HLS stream URL (Caltrans camera)
     hls_url = "https://wzmedia.dot.ca.gov/D5/1atFoothillBlvd.stream/playlist.m3u8"
-
+    #hls_url = "https://wzmedia.dot.ca.gov/D5/us101southhiguerastreet.stream/playlist.m3u8"
     video_path_arg = DeclareLaunchArgument(
         'video_path',
         default_value=hls_url,
