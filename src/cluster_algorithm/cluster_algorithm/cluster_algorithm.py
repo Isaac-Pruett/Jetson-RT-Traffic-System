@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
-import rclcpp
-from rclcpp.node import Node
+import rclpy
+from rclpy.node import Node
 import pandas as pd
 from sklearn.cluster import KMeans
 import os
@@ -11,8 +11,8 @@ class KMeansClusteringNode(Node):
         super().__init__('kmeans_clustering_node')
         
         # Declare parameters
-        self.declare_parameter('input_csv', 'base.csv')
-        self.declare_parameter('output_csv', 'base_clustered.csv')
+        self.declare_parameter('input_csv', 'csv/base2.csv')
+        self.declare_parameter('output_csv', 'csv/base_clustered.csv')
         self.declare_parameter('n_clusters', 5)
         self.declare_parameter('random_state', 42)
         
@@ -42,7 +42,7 @@ class KMeansClusteringNode(Node):
             df = pd.read_csv(self.input_csv)
             
             # Validate required columns
-            required_columns = ['ID', 'initial x', 'initial y', 'final x', 'final y']
+            required_columns = ['ID', 'x_initial', 'y_initial', 'x_final', 'y_final']
             missing_columns = [col for col in required_columns if col not in df.columns]
             
             if missing_columns:
@@ -53,7 +53,7 @@ class KMeansClusteringNode(Node):
             self.get_logger().info(f'Loaded {len(df)} rows from CSV')
             
             # Prepare features for clustering (initial x, initial y, final x, final y)
-            features = df[['initial x', 'initial y', 'final x', 'final y']].values
+            features = df[['x_initial', 'y_initial', 'x_final', 'y_final']].values
             
             self.get_logger().info(f'Running KMeans clustering with k={self.n_clusters}')
             
@@ -86,7 +86,7 @@ class KMeansClusteringNode(Node):
             self.get_logger().error(traceback.format_exc())
 
 def main(args=None):
-    rclcpp.init(args=args)
+    rclpy.init(args=args)
     
     node = KMeansClusteringNode()
     
@@ -95,7 +95,7 @@ def main(args=None):
     node.get_logger().info('Clustering task completed. Shutting down node.')
     
     node.destroy_node()
-    rclcpp.shutdown()
+    rclpy.shutdown()
 
 if __name__ == '__main__':
     main()

@@ -10,7 +10,7 @@ from vision_msgs.msg import ObjectHypothesisWithPose
 # A node that subscribes to /tracked_object_summary to put data into CSV
 class ObjectSubscriber(Node):
     def __init__(self):
-        super().__init__('object_subscriber')
+        super().__init__('tracked_object_subscriber')
 
         # Subscriber to /tracked_object_summary
         self.sub_ = self.create_subscription(Detection2DArray, '/tracked_object_summary', self.callback, 10)
