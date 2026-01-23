@@ -2,7 +2,7 @@
 SURP 2025 Project for Cal Poly Slo. Real-time traffic detection with a Jetson Orin Nano.
 test push to the repo from 2nd board
 
-
+cd "$(dirname) "$0")"
 
 commands to run everything off of a mp4
 1. ros2 run rqt_image_view rqt_image_view
@@ -14,12 +14,12 @@ commands to run everything off of a mp4
 #!/bin/bash 
 
 # Terminal 1:  Image view    
-gnome-terminal --bash - c "source install/setup.bash; ros2 run rqt_image_view rqt_image_view; exec bash"
+gnome-terminal --bash -c "source install/setup.bash; ros2 run rqt_image_view rqt_image_view; exec bash"
 
 sleep 2
 
 # Terminal 2: Deepstream
-gnome-terminal --bash - c "source install/setup.bash; ros2 launch launch/deepstream_vid.py; exec bash"
+gnome-terminal --bash -c "source install/setup.bash; ros2 launch launch/deepstream_vid.py; exec bash"
 
 sleep 2
 
