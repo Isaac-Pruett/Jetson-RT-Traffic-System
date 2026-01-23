@@ -11,9 +11,9 @@ class KMeansClusteringNode(Node):
         super().__init__('kmeans_clustering_node')
         
         # Declare parameters
-        self.declare_parameter('input_csv', 'csv/base2.csv')
-        self.declare_parameter('output_csv', 'csv/base_clustered.csv')
-        self.declare_parameter('n_clusters', 5)
+        self.declare_parameter('input_csv', 'csv/base3.csv')
+        self.declare_parameter('output_csv', 'csv/base_clustered3.csv')
+        self.declare_parameter('n_clusters', 2)
         self.declare_parameter('random_state', 42)
         
         # Get parameters

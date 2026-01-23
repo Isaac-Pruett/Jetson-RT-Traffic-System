@@ -17,7 +17,7 @@ class ObjectSubscriber(Node):
         self.count = 0
 
         # Open csv once and add the header
-        self.file = open("csv/base2.csv", "w", newline="")
+        self.file = open("csv/base3.csv", "w", newline="")
         self.write = csv.writer(self.file)
         self.write.writerow(["Class ID", "ID", "Confidence LV", "x_initial", "y_initial", "x_final", "y_final"])
     
