@@ -1,8 +1,17 @@
 # Jetson-RT-Traffic-System
-SURP 2025 Project for Cal Poly Slo. Real-time traffic detection with a Jetson Orin Nano.
-test push to the repo from 2nd board
+Caltrans Traffic Cam
+By Marco Menashe, Micah Miller, Binh To, Jack Toyama
 
-cd "$(dirname) "$0")"
+Continued from SURP 2025 Project for Cal Poly Slo. Real-time traffic detection with a Jetson Orin Nano.
+By Isaac Pruett
+
+# Features
+1. MP4 and Cal Trans live cam video input
+2. Vehicle outlines and path visualization in real-time
+3. Base CSV creation with vehicle type, confidence level, vehicle ID, start, and end position
+4. Cluster algorithm runs on base CSV input
+5. Accurately assigns vehicles to a cluster and outputs CSV with base information plus cluster
+
 
 commands to run everything off of a mp4
 1. ros2 run rqt_image_view rqt_image_view
