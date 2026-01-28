@@ -18,7 +18,7 @@ commands to run everything off of a mp4
 2. ros2 launch launch/deepstream_vid.py
 3. ros2 launch launch/deepstream_cam.py (live cam run 1 and 3)
 
-
+https://wzmedia.dot.ca.gov/D3/28_JCT267_JWO_KINGS_BEACH_PLA28_EB.stream/playlist.m3u8
 
 #!/bin/bash 
 
