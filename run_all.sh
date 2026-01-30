@@ -4,6 +4,9 @@ cd "$(dirname "$0")"
 
 #ws="/home/nvidia/Jetson-RT-Traffic-Sytem"
 
+# Terminal 3 NAME:
+NAME="$1"
+
 # Terminal 1:  Image view    
 gnome-terminal -- bash -c "source install/setup.bash; ros2 run rqt_image_view rqt_image_view; exec bash"
 
@@ -15,7 +18,7 @@ gnome-terminal -- bash -c "source install/setup.bash; ros2 launch launch/deepstr
 sleep 2
 
 # Terminal 3: CSV Subcriber and Publisher
-gnome-terminal -- bash -c "source install/setup.bash; ros2 run inputCSVSubscriber inputCSVSubscriber; exec bash"
+gnome-terminal -- bash -c "source install/setup.bash; ros2 run inputCSVSubscriber inputCSVSubscriber ${NAME}; exec bash"
 
 sleep 2
 

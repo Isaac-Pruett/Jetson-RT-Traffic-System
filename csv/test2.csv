@@ -1,0 +1,5 @@
+Class ID,ID,Confidence LV,x_initial,y_initial,x_final,y_final
+car,0,0.5247,300,354,82,475
+car,0,0.5247,300,354,82,475
+car,2,0.5894,490,218,111,453
+car,2,0.5894,490,218,111,453

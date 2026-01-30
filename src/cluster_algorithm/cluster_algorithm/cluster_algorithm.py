@@ -1,19 +1,24 @@
 #!/usr/bin/env python3
 
-import rclpy
-from rclpy.node import Node
-import pandas as pd
-from sklearn.cluster import KMeans
 import os
+import rclpy
+import csv
+import pandas as pd
+import numpy as np
+from rclpy.node import Node
+from sklearn.cluster import KMeans
+from vision_msgs.msg import Detection2DArray
+from vision_msgs.msg import ObjectHypothesisWithPose
 
 class KMeansClusteringNode(Node):
     def __init__(self):
         super().__init__('kmeans_clustering_node')
-        
+        self.ready = False # Variable to mark "ready to add the next object into cluster(s)"
+
         # Declare parameters
-        self.declare_parameter('input_csv', 'csv/base3.csv')
-        self.declare_parameter('output_csv', 'csv/base_clustered3.csv')
-        self.declare_parameter('n_clusters', 2)
+        self.declare_parameter('input_csv', 'csv/test3.csv')
+        self.declare_parameter('output_csv', 'csv/test_clustered3.csv')
+        self.declare_parameter('n_clusters', 5)
         self.declare_parameter('random_state', 42)
         
         # Get parameters
@@ -27,8 +32,8 @@ class KMeansClusteringNode(Node):
         self.get_logger().info(f'Output CSV: {self.output_csv}')
         self.get_logger().info(f'Number of clusters: {self.n_clusters}')
         
-        # Run clustering
-        self.run_clustering()
+        # Initialize K-mean Algorithm
+        self.kmeans = KMeans(n_clusters=self.n_clusters, random_state=self.random_state)
         
     def run_clustering(self):
         try:
@@ -58,8 +63,8 @@ class KMeansClusteringNode(Node):
             self.get_logger().info(f'Running KMeans clustering with k={self.n_clusters}')
             
             # Perform KMeans clustering
-            kmeans = KMeans(n_clusters=self.n_clusters, random_state=self.random_state)
-            cluster_labels = kmeans.fit_predict(features)
+            #kmeans = KMeans(n_clusters=self.n_clusters, random_state=self.random_state)
+            cluster_labels = self.kmeans.fit_predict(features)
             
             # Add cluster assignments to dataframe
             df['cluster'] = cluster_labels
@@ -77,19 +82,58 @@ class KMeansClusteringNode(Node):
             
             # Print cluster centers
             self.get_logger().info(f'Cluster centers (initial_x, initial_y, final_x, final_y):')
-            for i, center in enumerate(kmeans.cluster_centers_):
-                self.get_logger().info(f'  Cluster {i}: [{center[0]:.2f}, {center[1]:.2f}, {center[2]:.2f}, {center[3]:.2f}]')
-                
+            for i, center in enumerate(self.kmeans.cluster_centers_):
+                self.get_logger().info(f'  Cluster {i}: [{center[0]:.2f}, {center[1]:.2f}, {center[2]:.2f}, {center[3]:.2f}]') 
+            
+            # Mark it ready to continously add more vehicles past 100th
+            self.ready = True
+            self.get_logger().info("Ready to group clusterings...")
+
         except Exception as e:
             self.get_logger().error(f'Error during clustering: {str(e)}')
             import traceback
             self.get_logger().error(traceback.format_exc())
+    
+    # A function to start subscribing
+    def start_subscriber(self):
+        # Subscribe to /tracked_object_summary
+        self.sub_ = self.create_subscription(Detection2DArray, '/tracked_object_summary', self.callback, 10)
+
+    def callback(self, msg):
+        if not self.ready:
+            return # ignore early messages
+        
+        # Loop through the detected topic message and write them to csdv
+        for detection in msg.detections:
+            class_id  = detection.results[0].hypothesis.class_id
+            object_id = detection.id
+            confidence = detection.results[0].hypothesis.score
+
+            # Grab x,y initials and finals
+            x_initial = detection.results[0].pose.pose.position.x
+            y_initial = detection.results[0].pose.pose.position.y
+            x_final = detection.bbox.center.position.x
+            y_final = detection.bbox.center.position.y
+            
+            # Only write the objets with confidence level greater than 50%
+            if (confidence >= 0.5):
+                self.get_logger().info(f"Adding {class_id} ID #{object_id}")
+                new_data = np.array([[x_initial, y_initial, x_final, y_final]])
+                new_cluster_label = self.kmeans.predict(new_data)
+                new_csv_data = [class_id, object_id, f"{confidence:.4f}", int(x_initial), int(y_initial), int(x_final), int(y_final), new_cluster_label[0]]
+                with open(self.output_csv, 'a', newline='') as file:
+                    write = csv.writer(file)
+                    write.writerow(new_csv_data)
+
 
 def main(args=None):
     rclpy.init(args=args)
     
     node = KMeansClusteringNode()
-    
+    node.run_clustering() # run the clutering algo
+    node.start_subscriber() # start subscibing
+    rclpy.spin(node) # run callback
+
     # Since this is a one-time processing node, we can just let it complete
     # and then shutdown
     node.get_logger().info('Clustering task completed. Shutting down node.')
