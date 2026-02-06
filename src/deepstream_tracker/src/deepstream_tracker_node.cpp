@@ -361,6 +361,10 @@ private:
                 det.bbox.size_x = obj_meta->rect_params.width;
                 det.bbox.size_y = obj_meta->rect_params.height;
 
+                //
+                det.id = std::to_string(obj_meta->object_id); // added id tracking
+                //
+
                 ObjectHypothesisWithPose hyp;
                 hyp.hypothesis.class_id = ids[obj_meta->class_id];
                 hyp.hypothesis.score = obj_meta->confidence;

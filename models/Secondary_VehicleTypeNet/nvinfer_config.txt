@@ -1,0 +1,13 @@
+[property]
+gpu-id=0
+process-mode=2
+gie-unique-id=2
+operate-on-gie-id=1
+operate-on-class-ids=0
+network-type=1
+batch-size=16
+classifier-threshold=0.5
+
+onnx-file=/home/Jetson-RT-Traffic-System/models/Secondary_VehicleTypeNet/resnet18_pruned.onnx
+labelfile-path=/home/Jetson-RT-Traffic-System/models/Secondary_VehicleTypeNet/labels.txt
+model-engine-file=/home/Jetson-RT-Traffic-System/models/Secondary_VehicleTypeNet/vehicletypenet.engine

@@ -7,3 +7,7 @@ num-detected-classes=4
 model-color-format=0
 maintain-aspect-ratio=0
 output-tensor-meta=0
+
+[secondary-gie0]
+enable=1
+config-file=/home/micah/Jetson-RT-Traffic-System/models/Secondary_VehicleTypeNet/nvinfer_config.txt

@@ -92,7 +92,7 @@ private:
 
             cv::rectangle(img, pt1, pt2, color, thickness_scalar);
 
-            cv::putText(
+            cv::putText(                                    //adding box text
                 img, b_id, cv::Point(pt1.x, pt1.y - 5), 
                 cv::FONT_HERSHEY_SIMPLEX, 
                 0.5 * thickness_scalar,
