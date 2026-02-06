@@ -1,13 +1,21 @@
 [property]
 gpu-id=0
 process-mode=2
-gie-unique-id=1
+gie-unique-id=2
 operate-on-gie-id=1
 operate-on-class-ids=0
 network-type=1
 batch-size=16
 classifier-threshold=0.5
+net-scale-factor=0.00392156862745098
+model-color-format=0
 
-onnx-file=../Secondary_VehicleTypeNet/resnet18_pruned.onnx
-labelfile-path=../Secondary_VehicleTypeNet/labels.txt
-model-engine-file=../Secondary_VehicleTypeNet/vehicletypenet.engine
+onnx-file=/home/Jetson-RT-Traffic-System/models/Secondary_VehicleTypeNet/resnet18_pruned.onnx
+labelfile-path=/home/Jetson-RT-Traffic-System/models/Secondary_VehicleTypeNet/labels.txt
+model-engine-file=/home/Jetson-RT-Traffic-System/models/Secondary_VehicleTypeNet/resnet18_pruned.engine
+
+interval=0
+# Classify every detection (set to 2-5 to skip frames for performance)
+
+[class-attrs-all]
+pre-cluster-threshold=0.2
