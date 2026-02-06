@@ -1,14 +1,15 @@
 import matplotlib.pyplot as plt
 import pandas as pd
 
-df = pd.read_csv("test_clustered2.csv")
+df = pd.read_csv("base_clustered11.csv")
 
 cluster_colors = {
     0: "tab:blue",
     1: "tab:orange",
     2: "tab:green",
     3: "tab:red",
-    4: "tab:purple"
+    4: "tab:purple",
+    5: "tab:pink",
 }
 
 plt.figure(figsize=(8, 8))

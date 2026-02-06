@@ -8,13 +8,8 @@ def generate_launch_description():
 
     video_path_arg = DeclareLaunchArgument(
         'video_path',
-        #default_value= os.path.expanduser('~/Jetson-RT-Traffic-System/video/vecteezy_car-and-truck-traffic-on-the-highway-in-europe-poland_7957364.mp4'),
-        #default_value= os.path.expanduser('~/Jetson-RT-Traffic-System/video/2103099-hd_1280_720_60fps.mp4'),
-        #default_value= os.path.expanduser('~/Jetson-RT-Traffic-System/video/IMG_1059.MOV'),
-        #default_value= os.path.expanduser('~/Jetson-RT-Traffic-System/video/IMG_1058.MOV'),
-        #default_value= os.path.expanduser('~/Jetson-RT-Traffic-System/video/IMG_1080.MOV'),
-        #default_value= os.path.expanduser('~/Jetson-RT-Traffic-System/video/Car_ex0.mp4'),
-        default_value= os.path.expanduser('~/Jetson-RT-Traffic-System/video/highwaytest.mp4'),
+        #default_value= os.path.expanduser('~/Jetson-RT-Traffic-System/video/testvid2.mp4'),
+        default_value= os.path.expanduser('~/Jetson-RT-Traffic-System/video/highwaytest2.mp4'),
         #default_value= os.path.expanduser('~/Jetson-RT-Traffic-System/video/Car_ex1.mp4'),
         
         description='Path to the video file to publish'

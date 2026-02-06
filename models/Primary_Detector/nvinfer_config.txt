@@ -7,3 +7,5 @@ num-detected-classes=4
 model-color-format=0
 maintain-aspect-ratio=0
 output-tensor-meta=0
+
+cluster-mode=2

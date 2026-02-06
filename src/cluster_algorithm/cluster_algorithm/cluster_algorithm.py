@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import os
+import sys
 import rclpy
 import csv
 import pandas as pd
@@ -9,28 +10,33 @@ from rclpy.node import Node
 from sklearn.cluster import KMeans
 from vision_msgs.msg import Detection2DArray
 from vision_msgs.msg import ObjectHypothesisWithPose
+from sklearn.metrics import silhouette_samples, silhouette_score
 
 class KMeansClusteringNode(Node):
-    def __init__(self):
+    def __init__(self, inputFile, outputFile, ): #n_clusters):
         super().__init__('kmeans_clustering_node')
+        self.inputFile = inputFile
+        self.outputFile = outputFile
+        self.n_clusters = 2
         self.ready = False # Variable to mark "ready to add the next object into cluster(s)"
 
         # Declare parameters
-        self.declare_parameter('input_csv', 'csv/test3.csv')
-        self.declare_parameter('output_csv', 'csv/test_clustered3.csv')
-        self.declare_parameter('n_clusters', 5)
+        self.declare_parameter('input_csv', f"csv/{self.inputFile}.csv")
+        self.declare_parameter('output_csv', f"csv/{self.outputFile}.csv")
+        
+        #self.declare_parameter('n_clusters', int(self.n_clusters))
         self.declare_parameter('random_state', 42)
         
         # Get parameters
         self.input_csv = self.get_parameter('input_csv').get_parameter_value().string_value
         self.output_csv = self.get_parameter('output_csv').get_parameter_value().string_value
-        self.n_clusters = self.get_parameter('n_clusters').get_parameter_value().integer_value
+        #self.n_clusters = self.get_parameter('n_clusters').get_parameter_value().integer_value
         self.random_state = self.get_parameter('random_state').get_parameter_value().integer_value
         
         self.get_logger().info(f'KMeans Clustering Node started')
         self.get_logger().info(f'Input CSV: {self.input_csv}')
         self.get_logger().info(f'Output CSV: {self.output_csv}')
-        self.get_logger().info(f'Number of clusters: {self.n_clusters}')
+        #self.get_logger().info(f'Number of clusters: {self.n_clusters}')
         
         # Initialize K-mean Algorithm
         self.kmeans = KMeans(n_clusters=self.n_clusters, random_state=self.random_state)
@@ -60,12 +66,35 @@ class KMeansClusteringNode(Node):
             # Prepare features for clustering (initial x, initial y, final x, final y)
             features = df[['x_initial', 'y_initial', 'x_final', 'y_final']].values
             
-            self.get_logger().info(f'Running KMeans clustering with k={self.n_clusters}')
+            # Number of clusters to run to find the highest silhouette_score
+            highest_silhouette_avg = -1
+            highest_n_clusters = 2
+
+            range_n_clusters = [2, 3, 4, 5, 6]
+            for n_cluster in range_n_clusters:
+                self.get_logger().info(f'Running KMeans clustering with k={n_cluster}')
+                
+                # Perform KMeans clustering
+                kmeans_x = KMeans(n_cluster, random_state=self.random_state)
+                #cluster_labels = self.kmeans.fit_predict(features)
+                #cluster_labels = self.kmeans.fit_predict(features)
+                cluster_labels = kmeans_x.fit_predict(features)
+                
+                # Compute the silhoutte_score for the average value for all the samples
+                # ==> The density and separation of the formed clusters
+                silhouette_avg = silhouette_score(features, cluster_labels)
+                self.get_logger().info(f"For n_clusters = {n_cluster}, The average silhouette_score is : {silhouette_avg}")
+                
+                if (silhouette_avg > highest_silhouette_avg):
+                    highest_silhouette_avg = silhouette_avg
+                    highest_n_clusters = n_cluster
+                    self.n_cluster = n_cluster 
             
+            # Run cluster_algorithm with the highest silhouette average score
             # Perform KMeans clustering
-            #kmeans = KMeans(n_clusters=self.n_clusters, random_state=self.random_state)
+            self.kmeans = KMeans(highest_n_clusters, random_state=self.random_state)
             cluster_labels = self.kmeans.fit_predict(features)
-            
+
             # Add cluster assignments to dataframe
             df['cluster'] = cluster_labels
             
@@ -76,7 +105,7 @@ class KMeansClusteringNode(Node):
             self.get_logger().info(f'Cluster distribution:')
             
             # Print cluster distribution
-            for i in range(self.n_clusters):
+            for i in range(highest_n_clusters):
                 count = (cluster_labels == i).sum()
                 self.get_logger().info(f'  Cluster {i}: {count} objects')
             
@@ -127,9 +156,14 @@ class KMeansClusteringNode(Node):
 
 
 def main(args=None):
-    rclpy.init(args=args)
+    # Parse command-line
+    if (len(sys.argv) > 1):
+        print(f"length of argv {len(sys.argv)}")
+        inputFile = sys.argv[1]
+        outputFile = sys.argv[2]
     
-    node = KMeansClusteringNode()
+    rclpy.init(args=args)
+    node = KMeansClusteringNode(inputFile, outputFile)#, n_clusters)
     node.run_clustering() # run the clutering algo
     node.start_subscriber() # start subscibing
     rclpy.spin(node) # run callback
