@@ -8,6 +8,6 @@ network-type=1
 batch-size=16
 classifier-threshold=0.5
 
-onnx-file=/home/Jetson-RT-Traffic-System/models/Secondary_VehicleTypeNet/resnet18_pruned.onnx
-labelfile-path=/home/Jetson-RT-Traffic-System/models/Secondary_VehicleTypeNet/labels.txt
-model-engine-file=/home/Jetson-RT-Traffic-System/models/Secondary_VehicleTypeNet/vehicletypenet.engine
+onnx-file=~/Jetson-RT-Traffic-System/models/Secondary_VehicleTypeNet/resnet18_pruned.onnx
+labelfile-path=~/Jetson-RT-Traffic-System/models/Secondary_VehicleTypeNet/labels.txt
+model-engine-file=~/Jetson-RT-Traffic-System/models/Secondary_VehicleTypeNet/vehicletypenet.engine

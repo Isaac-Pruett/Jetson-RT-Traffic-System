@@ -61,6 +61,7 @@ private:
 
 
         for (const auto &box : latest_boxes_->detections){
+        
             const auto ctr = box.bbox.center.position;
             float w = box.bbox.size_x;
             float h = box.bbox.size_y;
@@ -68,24 +69,26 @@ private:
             cv::Point pt2(static_cast<int>(ctr.x + w/2.0f), static_cast<int>(ctr.y + h/2.0f));
             //RCLCPP_INFO(get_logger(), "results size: %d", box.results.size());
             // if (box.results.empty()) continue;
-            auto b_id = box.results[0].hypothesis.class_id;
+            std::string full_id = box.results[0].hypothesis.class_id;
+	    std::string primary = full_id.substr(0, full_id.find(":"));
+            
+            RCLCPP_INFO(get_logger(), "Drawing class: %s", full_id.c_str()); //debug
 
             cv::Scalar color;
 
             //RCLCPP_INFO(get_logger(), "skipped?");
 
-            if (b_id == "car") {
-                color = cv::Scalar(0, 0, 255);
-            } else if (b_id == "bicycle"){
-                color = cv::Scalar(255, 0, 0);
-            } else if (b_id == "person"){
-                color = cv::Scalar(40, 255, 0);
-            } else if (b_id == "road_sign"){
-                color = cv::Scalar(60, 187, 255);
-            } else {
-                return;
-            }
-
+            if (primary == "car") {
+	    color = cv::Scalar(0, 0, 255);
+	    } else if (primary == "bicycle") {
+		color = cv::Scalar(255, 0, 0);
+	    } else if (primary == "person") {
+		color = cv::Scalar(40, 255, 0);
+	    } else if (primary == "road_sign") {
+		color = cv::Scalar(60, 187, 255);
+	    } else {
+		continue;
+	    }
             //RCLCPP_INFO(get_logger(), "returned?");
 
             int thickness_scalar = std::max(1, static_cast<int>(std::floor(latest_image_->image.cols / 960.0f)));
@@ -93,7 +96,7 @@ private:
             cv::rectangle(img, pt1, pt2, color, thickness_scalar);
 
             cv::putText(                                    //adding box text
-                img, b_id, cv::Point(pt1.x, pt1.y - 5), 
+                img, full_id, cv::Point(pt1.x, pt1.y - 5), 
                 cv::FONT_HERSHEY_SIMPLEX, 
                 0.5 * thickness_scalar,
                 cv::Scalar(255, 255, 255), 

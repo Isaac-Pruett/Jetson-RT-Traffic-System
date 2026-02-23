@@ -13,7 +13,7 @@ def generate_launch_description():
         #default_value= os.path.expanduser('~/Jetson-RT-Traffic-System/video/IMG_1059.MOV'),
         #default_value= os.path.expanduser('~/Jetson-RT-Traffic-System/video/IMG_1058.MOV'),
         #default_value= os.path.expanduser('~/Jetson-RT-Traffic-System/video/IMG_1080.MOV'),
-        default_value= os.path.expanduser('~/Jetson-RT-Traffic-System/video/test.mp4'),
+        default_value= os.path.expanduser('~/Jetson-RT-Traffic-System/video/highwaytest2.mp4'),
         description='Path to the video file to publish'
     )
 

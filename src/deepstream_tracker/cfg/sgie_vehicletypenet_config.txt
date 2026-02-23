@@ -1,0 +1,25 @@
+[property]
+gpu-id=0
+process-mode=2
+gie-unique-id=2
+operate-on-gie-id=1
+operate-on-class-ids=0       # classify all objects
+network-type=1
+batch-size=1
+classifier-threshold=0.2
+net-scale-factor=0.00392156862745098
+model-color-format=0
+network-mode=1
+classifier-async-mode=1
+classifier-type=1               # per-object classifier
+input-object-min-width=128
+input-object-min-height=128
+
+onnx-file=/home/nvidia/Jetson-RT-Traffic-System/models/Secondary_VehicleTypeNet/resnet18_pruned.onnx
+labelfile-path=/home/nvidia/Jetson-RT-Traffic-System/models/Secondary_VehicleTypeNet/labels.txt
+model-engine-file=/home/nvidia/Jetson-RT-Traffic-System/models/Secondary_VehicleTypeNet/resnet18_pruned.engine
+
+interval=0
+
+[class-attrs-all]
+pre-cluster-threshold=0.2
