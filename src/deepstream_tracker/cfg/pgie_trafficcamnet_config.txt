@@ -1,0 +1,55 @@
+################################################################################
+# SPDX-FileCopyrightText: Copyright (c) 2019-2024 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+################################################################################
+
+[property]
+gpu-id=0
+net-scale-factor=0.00392156862745098
+model-color-format=0
+
+# Model and Engine Paths
+onnx-file=/home/nvidia/Jetson-RT-Traffic-System/models/Primary_Detector/model_sim.onnx
+model-engine-file=/home/nvidia/Jetson-RT-Traffic-System/models/Primary_Detector/traffic_int8.engine
+labelfile-path=/home/nvidia/Jetson-RT-Traffic-System/models/Primary_Detector/labels.txt
+
+# INT8 Specific Configs 
+int8-calib-file=/home/nvidia/Jetson-RT-Traffic-System/models/Primary_Detector/traffic_int8.cache
+network-mode=1
+
+# RT-DETR/Transformer models handle their own NMS. [cite: 9]
+# Set cluster-mode to 4 (No Clustering) to avoid corrupting the output. [cite: 9, 10]
+cluster-mode=4
+
+# Transformer models require an Optimization Profile (usually ID 0)
+force-implicit-batch-dim=0
+
+batch-size=1
+process-mode=1
+gie-unique-id=1
+num-detected-classes=5
+maintain-aspect-ratio=0
+
+# Custom Parser for TAO/RT-DETR
+custom-lib-path=/home/nvidia/Jetson-RT-Traffic-System/models/Primary_Detector/libnvds_infercustomparser_tao.so
+parse-bbox-func-name=NvDsInferParseCustomDDETRTAO
+
+[class-attrs-all]
+pre-cluster-threshold=0.05
+perClassPreclusterThreshold=0.05,0.05,0.05,0.05,0.05
+topk=20
+nms-iou-threshold=0.5
+minBoxWidth=40
+minBoxHeight=40

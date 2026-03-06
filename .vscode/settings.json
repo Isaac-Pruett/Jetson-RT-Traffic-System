@@ -1,0 +1,9 @@
+{
+    "cmake.sourceDirectory": "/Users/isaacpruett/Documents/cal poly/SURP 2025 - Seng/Jetson-RT-Traffic-System/src/traffic_detect",
+    "files.associations": {
+        "__split_buffer": "cpp",
+        "deque": "cpp",
+        "string": "cpp",
+        "vector": "cpp"
+    }
+}

@@ -1,0 +1,35 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "/opt/ros/humble/include/**",
+                "/usr/include/opencv4/**",
+                "/usr/include/**",
+                "/usr/local/include/**",
+                "/usr/local/cuda/include/**",
+                "/usr/include/aarch64-linux-gnu/**",
+                "/usr/lib/aarch64-linux-gnu/gstreamer-1.0/include/**",
+                "~/Jetson-RT-Traffic-System/install/**",
+                "~/Jetson-RT-Traffic-System/build/**",
+                
+
+            ],
+            "browse": {
+                "path": [
+                    "/opt/ros/humble/include",
+                    "/usr/include",
+                    "/usr/local/include"
+                ],
+                "limitSymbolsToIncludedHeaders": true
+            },
+            "defines": [],
+            "compilerPath": "/usr/bin/gcc",
+            "cStandard": "c17",
+            "cppStandard": "gnu++17",
+            "intelliSenseMode": "linux-gcc-arm64"
+        }
+    ],
+    "version": 4
+}
